@@ -1,0 +1,14 @@
+PODS:
+  - CustomHttpHeadersURLProtocol (1.0.0)
+
+DEPENDENCIES:
+  - CustomHttpHeadersURLProtocol (from `../`)
+
+EXTERNAL SOURCES:
+  CustomHttpHeadersURLProtocol:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  CustomHttpHeadersURLProtocol: 471194256fde7f12899a2dc1215fcf88361047c5
+
+COCOAPODS: 0.39.0
