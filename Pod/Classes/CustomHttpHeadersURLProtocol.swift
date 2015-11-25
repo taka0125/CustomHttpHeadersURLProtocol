@@ -10,28 +10,25 @@
 import Foundation
 
 public final class CustomHttpHeadersConfig {
-  public typealias SetupCustomHeadersBlock = NSMutableURLRequest -> Void
-  public typealias CanHandleHostsBlock = String -> Bool
-  public typealias CanHandleSchemeBlock = String -> Bool
+  public typealias CanHandleRequest = NSURLRequest -> Bool
+  public typealias SetupCustomHeaders = NSMutableURLRequest -> Void
   
-  private let setupCustomHeadersBlock: SetupCustomHeadersBlock
-  private let canHandleHostsBlock: CanHandleHostsBlock
-  private let canHandleSchemeBlock: CanHandleSchemeBlock
+  private let setupCustomHeaders: SetupCustomHeaders
+  private let canHandleRequest: CanHandleRequest
   
-  public init(setupCustomHeadersBlock: SetupCustomHeadersBlock, canHandleHostsBlock: CanHandleHostsBlock, canHandleSchemeBlock: CanHandleSchemeBlock) {
-    self.setupCustomHeadersBlock = setupCustomHeadersBlock
-    self.canHandleHostsBlock = canHandleHostsBlock
-    self.canHandleSchemeBlock = canHandleSchemeBlock
+  public init(setupCustomHeaders: SetupCustomHeaders, canHandleRequest: CanHandleRequest) {
+    self.setupCustomHeaders = setupCustomHeaders
+    self.canHandleRequest = canHandleRequest
   }
   
-  public convenience init(setupCustomHeadersBlock: SetupCustomHeadersBlock, canHandleHostsBlock: CanHandleHostsBlock) {
-    let canHandleSchemeBlock = { (scheme: String) -> Bool in
-      if scheme == "http" { return true }
-      if scheme == "https" { return true }
-      return false
+  public convenience init(setupCustomHeaders: SetupCustomHeaders) {
+    let canHandleRequest = { (request: NSURLRequest) -> Bool in
+      guard let scheme = request.URL?.scheme else { return false }
+      if !["http", "https"].contains(scheme) { return false }
+      return true
     }
     
-    self.init(setupCustomHeadersBlock: setupCustomHeadersBlock, canHandleHostsBlock: canHandleHostsBlock, canHandleSchemeBlock: canHandleSchemeBlock)
+    self.init(setupCustomHeaders: setupCustomHeaders, canHandleRequest: canHandleRequest)
   }
 }
 
@@ -63,12 +60,8 @@ public final class CustomHttpHeadersURLProtocol: NSURLProtocol {
   override public class func canInitWithRequest(request: NSURLRequest) -> Bool {
     if let handled = NSURLProtocol.propertyForKey(Const.ProtocolHandledKey, inRequest: request) as? Bool where handled { return false }
     
-    guard let host = request.URL?.host else { return false }
-    guard let scheme = request.URL?.scheme else { return false }
     guard let config = customHttpHeadersConfig else { return false }
-    
-    if !config.canHandleSchemeBlock(scheme) { return false }
-    if !config.canHandleHostsBlock(host) { return false }
+    if !config.canHandleRequest(request) { return false }
     
     return true
   }
@@ -81,7 +74,7 @@ public final class CustomHttpHeadersURLProtocol: NSURLProtocol {
     guard let request = self.request.mutableCopy() as? NSMutableURLRequest else { return }
     
     markAsHandled(request)
-    self.dynamicType.customHttpHeadersConfig?.setupCustomHeadersBlock(request)
+    self.dynamicType.customHttpHeadersConfig?.setupCustomHeaders(request)
     
     let config = NSURLSessionConfiguration.defaultSessionConfiguration()
     config.protocolClasses = [self.dynamicType]

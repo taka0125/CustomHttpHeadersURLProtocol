@@ -23,17 +23,22 @@ pod "CustomHttpHeadersURLProtocol"
 
 ```
 private func setupCustomHttpHeadersURLProtocol() {
-  let setupCustomHeadersBlock: CustomHttpHeadersConfig.SetupCustomHeadersBlock = { (request: NSMutableURLRequest) in
+  let setupCustomHeaders: CustomHttpHeadersConfig.SetupCustomHeaders = { (request: NSMutableURLRequest) in
     request.addValue("CustomHttpHeadersURLProtocolSample", forHTTPHeaderField: "X-App-Name")
     request.addValue("\(NSDate().timeIntervalSince1970)", forHTTPHeaderField: "X-Timestamp")
   }
   
-  let canHandleHostsBlock: CustomHttpHeadersConfig.CanHandleHostsBlock = { (host: String) -> Bool in
+  let canHandleRequest: CustomHttpHeadersConfig.CanHandleRequest = { (request: NSURLRequest) -> Bool in
+    guard let scheme = request.URL?.scheme else { return false }
+    guard let host = request.URL?.host else { return false }
+    
+    if !["http", "https"].contains(scheme) { return false }
     if host == "0.0.0.0" { return true }
+
     return false
   }
   
-  let config = CustomHttpHeadersConfig(setupCustomHeadersBlock: setupCustomHeadersBlock, canHandleHostsBlock: canHandleHostsBlock)
+  let config = CustomHttpHeadersConfig(setupCustomHeaders: setupCustomHeaders, canHandleRequest: canHandleRequest)
   CustomHttpHeadersURLProtocol.start(config)
 }
 ```
