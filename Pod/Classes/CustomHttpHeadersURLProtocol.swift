@@ -58,7 +58,19 @@ public final class CustomHttpHeadersURLProtocol: NSURLProtocol {
 
     session = NSURLSession(configuration: config, delegate: self, delegateQueue: nil)
 
-    sessionTask = session?.dataTaskWithRequest(request)
+    sessionTask = session?.dataTaskWithRequest(request) { [weak self] data, response, error in
+      guard let strongSelf = self else { return }
+      
+      if let error = error {
+        strongSelf.client?.URLProtocol(strongSelf, didFailWithError: error)
+        return
+      }
+      
+      strongSelf.client?.URLProtocol(strongSelf, didReceiveResponse: response!, cacheStoragePolicy: .Allowed)
+      strongSelf.client?.URLProtocol(strongSelf, didLoadData: data!)
+      strongSelf.client?.URLProtocolDidFinishLoading(strongSelf)
+    }
+    
     sessionTask?.resume()
   }
   
@@ -100,5 +112,9 @@ extension CustomHttpHeadersURLProtocol: NSURLSessionDataDelegate, NSURLSessionTa
   
   public func URLSession(session: NSURLSession, task: NSURLSessionTask, didSendBodyData bytesSent: Int64, totalBytesSent: Int64, totalBytesExpectedToSend: Int64) {
     Notifier.notifyDidSendBodyData(bytesSent, totalBytesSent: totalBytesSent, totalBytesExpectedToSend: totalBytesExpectedToSend)
+  }
+  
+  public func URLSession(session: NSURLSession, task: NSURLSessionTask, willPerformHTTPRedirection response: NSHTTPURLResponse, newRequest request: NSURLRequest, completionHandler: (NSURLRequest?) -> Void) {
+    client?.URLProtocol(self, wasRedirectedToRequest: request, redirectResponse: response)
   }
 }
