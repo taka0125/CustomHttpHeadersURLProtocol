@@ -14,7 +14,7 @@
             buildForArchiving = "YES">
             <BuildableReference
                BuildableIdentifier = 'primary'
-               BlueprintIdentifier = 'DC548A052665C692ED83F488'
+               BlueprintIdentifier = 'F0C6A34584B9E68413F78885'
                BlueprintName = 'CustomHttpHeadersURLProtocol'
                ReferencedContainer = 'container:Pods.xcodeproj'
                BuildableName = 'CustomHttpHeadersURLProtocol.framework'>

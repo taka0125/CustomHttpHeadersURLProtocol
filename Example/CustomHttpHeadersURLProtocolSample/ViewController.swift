@@ -10,25 +10,16 @@ import UIKit
 import CustomHttpHeadersURLProtocol
 
 class ViewController: UIViewController {
+  @IBOutlet private weak var webView: UIWebView!
+  
   override func viewDidLoad() {
     super.viewDidLoad()
     setupCustomHttpHeadersURLProtocol()
-  }
-  
-  @IBAction func doRequest() {
+    
     let url = NSURL(string: "http://0.0.0.0:9292")!
     let request = NSMutableURLRequest(URL: url)
     request.HTTPMethod = "GET"
-    
-    let task = NSURLSession.sharedSession().dataTaskWithRequest(request) { (data, response, error) -> Void in
-      if error == nil {
-        let result = NSString(data: data!, encoding: NSUTF8StringEncoding)
-        print(result)
-      } else {
-        print(error)
-      }
-    }
-    task.resume()
+    webView.loadRequest(request)
   }
   
   private func setupCustomHttpHeadersURLProtocol() {
