@@ -10,8 +10,8 @@
 import Foundation
 
 public final class CustomHttpHeadersConfig {
-  public typealias CanHandleRequest = NSURLRequest -> Bool
-  public typealias SetupCustomHeaders = NSMutableURLRequest -> Void
+  public typealias CanHandleRequest = (URLRequest) -> Bool
+  public typealias SetupCustomHeaders = (MutableURLRequest) -> Void
   
   public let setupCustomHeaders: SetupCustomHeaders
   public let canHandleRequest: CanHandleRequest
@@ -22,8 +22,8 @@ public final class CustomHttpHeadersConfig {
   }
   
   public convenience init(setupCustomHeaders: SetupCustomHeaders) {
-    let canHandleRequest = { (request: NSURLRequest) -> Bool in
-      guard let scheme = request.URL?.scheme else { return false }
+    let canHandleRequest = { (request: URLRequest) -> Bool in
+      guard let scheme = request.url?.scheme else { return false }
       if !["http", "https"].contains(scheme) { return false }
       return true
     }

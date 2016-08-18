@@ -1,6 +1,6 @@
 source 'https://github.com/CocoaPods/Specs.git'
 use_frameworks!
 
-target 'CustomHttpHeadersURLProtocolSample', :exclusive => true do
-  pod 'CustomHttpHeadersURLProtocol', :path => '../'
+target 'CustomHttpHeadersURLProtocolSample' do
+  pod 'CustomHttpHeadersURLProtocol', path: '../'
 end

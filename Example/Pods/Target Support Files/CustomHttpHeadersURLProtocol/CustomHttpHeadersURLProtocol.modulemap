@@ -1,6 +1,0 @@
-framework module CustomHttpHeadersURLProtocol {
-  umbrella header "CustomHttpHeadersURLProtocol-umbrella.h"
-
-  export *
-  module * { export * }
-}

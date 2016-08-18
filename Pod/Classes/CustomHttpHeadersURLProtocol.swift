@@ -9,33 +9,33 @@
 
 import Foundation
 
-public final class CustomHttpHeadersURLProtocol: NSURLProtocol {
-  private struct Const {
+public final class CustomHttpHeadersURLProtocol: URLProtocol {
+  fileprivate struct Const {
     static let ProtocolHandledKey = "CustomHttpHeadersURLProtocol/ProtocolHandledKey"
   }
   
-  private var session: NSURLSession?
-  private var sessionTask: NSURLSessionTask?
-  private static var customHttpHeadersConfig: CustomHttpHeadersConfig?
-  private static var started = false
+  fileprivate var session: URLSession?
+  fileprivate var sessionTask: URLSessionTask?
+  fileprivate static var customHttpHeadersConfig: CustomHttpHeadersConfig?
+  fileprivate static var started = false
   
-  public class func start(customHttpHeadersConfig: CustomHttpHeadersConfig) {
+  public class func start(_ customHttpHeadersConfig: CustomHttpHeadersConfig) {
     if started { return }
     started = true
     
     self.customHttpHeadersConfig = customHttpHeadersConfig
     
-    NSURLProtocol.registerClass(self)
+    URLProtocol.registerClass(self)
   }
   
   public class func stop() {
-    NSURLProtocol.unregisterClass(self)
+    URLProtocol.unregisterClass(self)
     started = false
     customHttpHeadersConfig = nil
   }
   
-  override public class func canInitWithRequest(request: NSURLRequest) -> Bool {
-    if let handled = NSURLProtocol.propertyForKey(Const.ProtocolHandledKey, inRequest: request) as? Bool where handled { return false }
+  override public class func canInit(with request: URLRequest) -> Bool {
+    if let handled = URLProtocol.property(forKey: Const.ProtocolHandledKey, in: request) as? Bool , handled { return false }
     
     guard let config = customHttpHeadersConfig else { return false }
     if !config.canHandleRequest(request) { return false }
@@ -43,33 +43,32 @@ public final class CustomHttpHeadersURLProtocol: NSURLProtocol {
     return true
   }
   
-  override public class func canonicalRequestForRequest(request: NSURLRequest) -> NSURLRequest {
+  override public class func canonicalRequest(for request: URLRequest) -> URLRequest {
     return request
   }
   
   override public func startLoading() {
-    guard let request = self.request.mutableCopy() as? NSMutableURLRequest else { return }
+    guard let request = (self.request as NSURLRequest).mutableCopy() as? NSMutableURLRequest else { return }
     
     markAsHandled(request)
-    self.dynamicType.customHttpHeadersConfig?.setupCustomHeaders(request)
+    type(of: self).customHttpHeadersConfig?.setupCustomHeaders(request)
     
-    let config = NSURLSessionConfiguration.defaultSessionConfiguration()
-    config.protocolClasses = [self.dynamicType]
+    let config = URLSessionConfiguration.default
+    config.protocolClasses = [type(of: self)]
 
-    session = NSURLSession(configuration: config, delegate: self, delegateQueue: nil)
-
-    sessionTask = session?.dataTaskWithRequest(request) { [weak self] data, response, error in
+    session = URLSession(configuration: config, delegate: self, delegateQueue: nil)
+    sessionTask = session?.dataTask(with: request as URLRequest, completionHandler: { [weak self] (data, response, error) in
       guard let strongSelf = self else { return }
       
       if let error = error {
-        strongSelf.client?.URLProtocol(strongSelf, didFailWithError: error)
+        strongSelf.client?.urlProtocol(strongSelf, didFailWithError: error)
         return
       }
       
-      strongSelf.client?.URLProtocol(strongSelf, didReceiveResponse: response!, cacheStoragePolicy: .Allowed)
-      strongSelf.client?.URLProtocol(strongSelf, didLoadData: data!)
-      strongSelf.client?.URLProtocolDidFinishLoading(strongSelf)
-    }
+      strongSelf.client?.urlProtocol(strongSelf, didReceive: response!, cacheStoragePolicy: .allowed)
+      strongSelf.client?.urlProtocol(strongSelf, didLoad: data!)
+      strongSelf.client?.urlProtocolDidFinishLoading(strongSelf)
+    })
     
     sessionTask?.resume()
   }
@@ -83,38 +82,38 @@ public final class CustomHttpHeadersURLProtocol: NSURLProtocol {
 // MARK: - Private Methods
 
 extension CustomHttpHeadersURLProtocol {
-  private func markAsHandled(request: NSMutableURLRequest) {
-    NSURLProtocol.setProperty(true, forKey: Const.ProtocolHandledKey, inRequest: request)
+  fileprivate func markAsHandled(_ request: NSMutableURLRequest) {
+    URLProtocol.setProperty(true, forKey: Const.ProtocolHandledKey, in: request)
   }
 }
 
 // MARK: - NSURLSession
 
-extension CustomHttpHeadersURLProtocol: NSURLSessionDataDelegate, NSURLSessionTaskDelegate {
-  public func URLSession(session: NSURLSession, task: NSURLSessionTask, didCompleteWithError error: NSError?) {
+extension CustomHttpHeadersURLProtocol: URLSessionDataDelegate, URLSessionTaskDelegate {
+  public func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
     if let error = error {
-      client?.URLProtocol(self, didFailWithError: error)
+      client?.urlProtocol(self, didFailWithError: error)
       
       return
     }
     
-    client?.URLProtocolDidFinishLoading(self)
+    client?.urlProtocolDidFinishLoading(self)
   }
   
-  public func URLSession(session: NSURLSession, dataTask: NSURLSessionDataTask, didReceiveResponse response: NSURLResponse, completionHandler: (NSURLSessionResponseDisposition) -> Void) {
-    client?.URLProtocol(self, didReceiveResponse: response, cacheStoragePolicy: .NotAllowed)
-    completionHandler(.Allow)
+  public func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive response: URLResponse, completionHandler: (URLSession.ResponseDisposition) -> Void) {
+    client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+    completionHandler(.allow)
   }
   
-  public func URLSession(session: NSURLSession, dataTask: NSURLSessionDataTask, didReceiveData data: NSData) {
-    client?.URLProtocol(self, didLoadData: data)
+  public func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
+    client?.urlProtocol(self, didLoad: data)
   }
   
-  public func URLSession(session: NSURLSession, task: NSURLSessionTask, didSendBodyData bytesSent: Int64, totalBytesSent: Int64, totalBytesExpectedToSend: Int64) {
+  public func urlSession(_ session: URLSession, task: URLSessionTask, didSendBodyData bytesSent: Int64, totalBytesSent: Int64, totalBytesExpectedToSend: Int64) {
     Notifier.notifyDidSendBodyData(bytesSent, totalBytesSent: totalBytesSent, totalBytesExpectedToSend: totalBytesExpectedToSend)
   }
   
-  public func URLSession(session: NSURLSession, task: NSURLSessionTask, willPerformHTTPRedirection response: NSHTTPURLResponse, newRequest request: NSURLRequest, completionHandler: (NSURLRequest?) -> Void) {
-    client?.URLProtocol(self, wasRedirectedToRequest: request, redirectResponse: response)
+  public func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse, newRequest request: URLRequest, completionHandler: (URLRequest) -> Void) {
+    client?.urlProtocol(self, wasRedirectedTo: request, redirectResponse: response)
   }
 }
