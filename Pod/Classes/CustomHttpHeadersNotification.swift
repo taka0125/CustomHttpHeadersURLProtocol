@@ -8,9 +8,9 @@
 //
 
 public enum CustomHttpHeadersNotification: String {
-  case DidSendBodyData = "CustomHttpHeadersURLProtocol/DidSendBodyData"
+  case didSendBodyData = "CustomHttpHeadersURLProtocol/didSendBodyData"
   
-  public static func splitParams<T: CustomHttpHeadersNotificationParams>(notification: NSNotification) -> T? {
+  public static func splitParams<T: CustomHttpHeadersNotificationParams>(_ notification: Notification) -> T? {
     guard let params = notification.userInfo?["params"] as? T else {
       return nil
     }

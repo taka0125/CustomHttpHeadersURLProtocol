@@ -1,5 +1,5 @@
 PODS:
-  - CustomHttpHeadersURLProtocol (1.1.0)
+  - CustomHttpHeadersURLProtocol (1.2.0)
 
 DEPENDENCIES:
   - CustomHttpHeadersURLProtocol (from `../`)
@@ -9,6 +9,8 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
-  CustomHttpHeadersURLProtocol: cda6863209269e496a8aa0ef0071e5ad7846e259
+  CustomHttpHeadersURLProtocol: 9f610b4370b1ac4920e79042cf409bd25a96c7b2
 
-COCOAPODS: 0.39.0
+PODFILE CHECKSUM: 2b92ef24d288539c435ecfe7eaf677ff453bfba9
+
+COCOAPODS: 1.1.0.rc.2
