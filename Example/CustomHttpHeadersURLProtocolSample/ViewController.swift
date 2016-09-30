@@ -24,7 +24,6 @@ class ViewController: UIViewController {
   
   fileprivate func setupCustomHttpHeadersURLProtocol() {
     let setupCustomHeaders: CustomHttpHeadersConfig.SetupCustomHeaders = { (request: NSMutableURLRequest) in
-//      var mutableRequest = request
       request.addValue("CustomHttpHeadersURLProtocolSample", forHTTPHeaderField: "X-App-Name")
       request.addValue("\(Date().timeIntervalSince1970)", forHTTPHeaderField: "X-Timestamp")
     }

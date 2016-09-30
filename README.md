@@ -22,7 +22,33 @@ github "taka0125/CustomHttpHeadersURLProtocol"
 
 ## Sample
 
+- Swift 3.0
+
+```swift
+fileprivate func setupCustomHttpHeadersURLProtocol() {
+  let setupCustomHeaders: CustomHttpHeadersConfig.SetupCustomHeaders = { (request: NSMutableURLRequest) in
+    request.addValue("CustomHttpHeadersURLProtocolSample", forHTTPHeaderField: "X-App-Name")
+    request.addValue("\(Date().timeIntervalSince1970)", forHTTPHeaderField: "X-Timestamp")
+  }
+  
+  let canHandleRequest: CustomHttpHeadersConfig.CanHandleRequest = { (request: URLRequest) -> Bool in
+    guard let scheme = request.url?.scheme else { return false }
+    guard let host = request.url?.host else { return false }
+    
+    if !["http", "https"].contains(scheme) { return false }
+    if host == "0.0.0.0" { return true }
+
+    return false
+  }
+  
+  let config = CustomHttpHeadersConfig(setupCustomHeaders: setupCustomHeaders, canHandleRequest: canHandleRequest)
+  CustomHttpHeadersURLProtocol.start(config)
+}
 ```
+
+- Swift 2.3
+
+```swift
 private func setupCustomHttpHeadersURLProtocol() {
   let setupCustomHeaders: CustomHttpHeadersConfig.SetupCustomHeaders = { (request: NSMutableURLRequest) in
     request.addValue("CustomHttpHeadersURLProtocolSample", forHTTPHeaderField: "X-App-Name")
