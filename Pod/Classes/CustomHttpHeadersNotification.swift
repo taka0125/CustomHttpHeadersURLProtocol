@@ -8,10 +8,10 @@
 //
 
 public enum CustomHttpHeadersNotification: String {
-  case DidSendBodyData = "CustomHttpHeadersURLProtocol/DidSendBodyData"
+  case didSendBodyData = "CustomHttpHeadersURLProtocol/didSendBodyData"
   
   public static func splitParams<T: CustomHttpHeadersNotificationParams>(_ notification: Notification) -> T? {
-    guard let params = (notification as NSNotification).userInfo?["params"] as? T else {
+    guard let params = notification.userInfo?["params"] as? T else {
       return nil
     }
     return params
@@ -22,12 +22,12 @@ public protocol CustomHttpHeadersNotificationParams {
 }
 
 public extension CustomHttpHeadersNotification {
-  open class DidSendBodyDataParams: NSObject, CustomHttpHeadersNotificationParams {
-    open let bytesSent: Int64
-    open let totalBytesSent: Int64
-    open let totalBytesExpectedToSend: Int64
+  public class DidSendBodyDataParams: NSObject, CustomHttpHeadersNotificationParams {
+    public let bytesSent: Int64
+    public let totalBytesSent: Int64
+    public let totalBytesExpectedToSend: Int64
     
-    open override var description: String {
+    public override var description: String {
       return "bytesSent: \(bytesSent), totalBytesSent: \(totalBytesSent), totalBytesExpectedToSend: \(totalBytesExpectedToSend)"
     }
     

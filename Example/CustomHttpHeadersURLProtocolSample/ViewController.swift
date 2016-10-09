@@ -17,13 +17,14 @@ class ViewController: UIViewController {
     setupCustomHttpHeadersURLProtocol()
     
     let url = URL(string: "http://0.0.0.0:9292")!
-    let request = NSMutableURLRequest(url: url)
+    var request = URLRequest(url: url)
     request.httpMethod = "GET"
-    webView.loadRequest(request as URLRequest)
+    webView.loadRequest(request)
   }
   
   fileprivate func setupCustomHttpHeadersURLProtocol() {
     let setupCustomHeaders: CustomHttpHeadersConfig.SetupCustomHeaders = { (request: NSMutableURLRequest) in
+//      var mutableRequest = request
       request.addValue("CustomHttpHeadersURLProtocolSample", forHTTPHeaderField: "X-App-Name")
       request.addValue("\(Date().timeIntervalSince1970)", forHTTPHeaderField: "X-Timestamp")
     }

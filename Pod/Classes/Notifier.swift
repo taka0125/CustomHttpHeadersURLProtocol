@@ -10,15 +10,15 @@
 internal struct Notifier {
   static func notifyDidSendBodyData(_ bytesSent: Int64, totalBytesSent: Int64, totalBytesExpectedToSend: Int64) {
     let params = CustomHttpHeadersNotification.DidSendBodyDataParams(bytesSent: bytesSent, totalBytesSent: totalBytesSent, totalBytesExpectedToSend: totalBytesExpectedToSend)
-    sendNotification(.DidSendBodyData, params: params)
+    sendNotification(.didSendBodyData, params: params)
   }
 }
 
 extension Notifier {
-  fileprivate static func sendNotification(_ notification: CustomHttpHeadersNotification, params: AnyObject?) {
-    var userInfo = [String: AnyObject]()
+  fileprivate static func sendNotification(_ notification: CustomHttpHeadersNotification, params: Any?) {
+    var userInfo = [AnyHashable: Any]()
     if let params = params {
-      userInfo["params"] = params;
+      userInfo["params"] = params
     }
     
     let n = Notification(name: Notification.Name(rawValue: notification.rawValue), object: nil, userInfo: userInfo)

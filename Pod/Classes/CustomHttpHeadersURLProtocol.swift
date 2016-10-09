@@ -50,7 +50,7 @@ public final class CustomHttpHeadersURLProtocol: URLProtocol {
   override public func startLoading() {
     guard let request = (self.request as NSURLRequest).mutableCopy() as? NSMutableURLRequest else { return }
     
-    markAsHandled(request)
+    markAsHandled(request: request)
     type(of: self).customHttpHeadersConfig?.setupCustomHeaders(request)
     
     let config = URLSessionConfiguration.default
@@ -82,7 +82,7 @@ public final class CustomHttpHeadersURLProtocol: URLProtocol {
 // MARK: - Private Methods
 
 extension CustomHttpHeadersURLProtocol {
-  fileprivate func markAsHandled(_ request: NSMutableURLRequest) {
+  fileprivate func markAsHandled(request: NSMutableURLRequest) {
     URLProtocol.setProperty(true, forKey: Const.ProtocolHandledKey, in: request)
   }
 }
@@ -100,7 +100,7 @@ extension CustomHttpHeadersURLProtocol: URLSessionDataDelegate, URLSessionTaskDe
     client?.urlProtocolDidFinishLoading(self)
   }
   
-  public func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive response: URLResponse, completionHandler: (URLSession.ResponseDisposition) -> Void) {
+  public func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive response: URLResponse, completionHandler: @escaping (URLSession.ResponseDisposition) -> Void) {
     client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
     completionHandler(.allow)
   }
@@ -113,7 +113,7 @@ extension CustomHttpHeadersURLProtocol: URLSessionDataDelegate, URLSessionTaskDe
     Notifier.notifyDidSendBodyData(bytesSent, totalBytesSent: totalBytesSent, totalBytesExpectedToSend: totalBytesExpectedToSend)
   }
   
-  public func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse, newRequest request: URLRequest, completionHandler: (URLRequest) -> Void) {
+  public func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse, newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void) {
     client?.urlProtocol(self, wasRedirectedTo: request, redirectResponse: response)
   }
 }
