@@ -9,29 +9,6 @@
 
 import Foundation
 
-public final class CustomHttpHeadersConfig {
-  public typealias CanHandleRequest = NSURLRequest -> Bool
-  public typealias SetupCustomHeaders = NSMutableURLRequest -> Void
-  
-  private let setupCustomHeaders: SetupCustomHeaders
-  private let canHandleRequest: CanHandleRequest
-  
-  public init(setupCustomHeaders: SetupCustomHeaders, canHandleRequest: CanHandleRequest) {
-    self.setupCustomHeaders = setupCustomHeaders
-    self.canHandleRequest = canHandleRequest
-  }
-  
-  public convenience init(setupCustomHeaders: SetupCustomHeaders) {
-    let canHandleRequest = { (request: NSURLRequest) -> Bool in
-      guard let scheme = request.URL?.scheme else { return false }
-      if !["http", "https"].contains(scheme) { return false }
-      return true
-    }
-    
-    self.init(setupCustomHeaders: setupCustomHeaders, canHandleRequest: canHandleRequest)
-  }
-}
-
 public final class CustomHttpHeadersURLProtocol: NSURLProtocol {
   private struct Const {
     static let ProtocolHandledKey = "CustomHttpHeadersURLProtocol/ProtocolHandledKey"
@@ -89,11 +66,17 @@ public final class CustomHttpHeadersURLProtocol: NSURLProtocol {
     sessionTask?.cancel()
     sessionTask = nil
   }
-  
+}
+
+// MARK: - Private Methods
+
+extension CustomHttpHeadersURLProtocol {
   private func markAsHandled(request: NSMutableURLRequest) {
     NSURLProtocol.setProperty(true, forKey: Const.ProtocolHandledKey, inRequest: request)
   }
 }
+
+// MARK: - NSURLSession
 
 extension CustomHttpHeadersURLProtocol: NSURLSessionDataDelegate, NSURLSessionTaskDelegate {
   public func URLSession(session: NSURLSession, task: NSURLSessionTask, didCompleteWithError error: NSError?) {
