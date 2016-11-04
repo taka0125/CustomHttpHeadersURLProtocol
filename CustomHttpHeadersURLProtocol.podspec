@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = "CustomHttpHeadersURLProtocol"
-  s.version          = "2.0.0"
+  s.version          = "2.1.0"
   s.summary          = "Add HTTP Header to HTTP Request."
   s.homepage         = "https://github.com/taka0125/CustomHttpHeadersURLProtocol"
   s.license          = "MIT"
