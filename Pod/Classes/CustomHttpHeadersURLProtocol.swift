@@ -97,4 +97,8 @@ extension CustomHttpHeadersURLProtocol: NSURLSessionDataDelegate, NSURLSessionTa
   public func URLSession(session: NSURLSession, dataTask: NSURLSessionDataTask, didReceiveData data: NSData) {
     client?.URLProtocol(self, didLoadData: data)
   }
+  
+  public func URLSession(session: NSURLSession, task: NSURLSessionTask, didSendBodyData bytesSent: Int64, totalBytesSent: Int64, totalBytesExpectedToSend: Int64) {
+    Notifier.notifyDidSendBodyData(bytesSent, totalBytesSent: totalBytesSent, totalBytesExpectedToSend: totalBytesExpectedToSend)
+  }
 }
